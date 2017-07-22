@@ -2,7 +2,15 @@
 #include "VideoDetails.h"
 #include "parameter.h"
 #include <iostream>
+#include <boost/program_options.hpp>
 using namespace std;
+
+namespace
+{
+    const size_t ERROR_IN_COMMAND_LINE = 1;
+    const size_t SUCCESS = 0;
+    const size_t ERROR_UNHANDLED_EXCEPTION = 2;
+} // namespace
 
 int OWNER_SEARCH_ROI;			
 int GMM_LEARN_FRAME;//frame number for GMM initialization		
@@ -73,7 +81,7 @@ inline string WorkFps()
     return ss.str();
 }
 
-int main()
+int main(const int argc, const char** argv)
 {	
 	/************************************************************************/
 	/* parameter seeting                                                    */
@@ -109,26 +117,58 @@ int main()
 		}
 	}
 
+    // Define and parse the program options
+    namespace po = boost::program_options;
+    boost::program_options::options_description desc("Options");
+    desc.add_options()
+            ("help", "Print help messages")
+            ("video,v", po::value<string>(), "Path to video file to be processed")
+            ("image,i", po::value<string>(), "Path to list file of images to be processed");
+
+    boost::program_options::variables_map vm;
+    try
+    {
+        po::store(po::parse_command_line(argc, argv, desc), vm); // can throw
+
+        /** --help option
+         */
+        if ( vm.count("help")  )
+        {
+            std::cout << "Basic Command Line Parameter App" << std::endl
+                      << desc << std::endl;
+            return SUCCESS;
+        }
+
+        po::notify(vm); // throws on error, so do after help in case
+        // there are any problems
+    }
+    catch(po::error& e)
+    {
+        std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
+        std::cerr << desc << std::endl;
+        return ERROR_IN_COMMAND_LINE;
+    }
+
 	/************************************************************************/
 	/* choose input channel                                                 */
 	/************************************************************************/
-	char test_video[200];
-	int method;
-	printf("1: video    2: camera\n");
-	scanf("%d",&method);
-	if (method==2){
-		sprintf(test_video, "");
-	}
-	else{
-		printf("please input video filename:  ***.avi or ***.mp4 \n");
-		scanf("%s",&test_video);
-	}
+//	char test_video[200];
+//	int method;
+//	printf("1: video    2: camera\n");
+//	scanf("%d",&method);
+//	if (method==2){
+//		sprintf(test_video, "");
+//	}
+//	else{
+//		printf("please input video filename:  ***.avi or ***.mp4 \n");
+//		scanf("%s",&test_video);
+//	}
 
 	/************************************************************************/
 	/* Video input setting                                                   */
 	/************************************************************************/
 	VideoDetails *_video;
-	_video = new VideoDetails(test_video);
+	_video = new VideoDetails(vm["video"].as<string>().c_str());
 	//_video = new VideoDetails("pets2006_1.avi");
 	IplImage *qImg, *myimg;
 	_video->_currentFrame = 0;
@@ -144,15 +184,15 @@ int main()
 	/************************************************************************/
 	imageheight = _video->_height*INPUT_RESIZE;
 	imagewidth = _video->_width*INPUT_RESIZE;
-	IplImage *setroi = cvQueryFrame(_video->_file);
-	IplImage *setroi2; setroi2 = cvCreateImage(cvSize(imagewidth,imageheight),8,3);
+//	IplImage *setroi = cvQueryFrame(_video->_file);
+//	IplImage *setroi2; setroi2 = cvCreateImage(cvSize(imagewidth,imageheight),8,3);
 	mymask = myCreateImage( imagewidth, imageheight, 3);
 	myInverse(mymask,mymask) ;
-	cvResize(setroi,setroi2);
-	cvShowImage("SetROI",setroi2);
-	cvSetMouseCallback("SetROI",onMouse,NULL);	
-	cvWaitKey(0);
-	cvDestroyWindow("SetROI");	
+//	cvResize(setroi,setroi2);
+//	cvShowImage("SetROI",setroi2);
+//	cvSetMouseCallback("SetROI",onMouse,NULL);
+//	cvWaitKey(0);
+//	cvDestroyWindow("SetROI");
 	
 	/************************************************************************/
 	/* counstruct object left class                                         */

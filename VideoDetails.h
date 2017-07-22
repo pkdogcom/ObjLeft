@@ -6,7 +6,7 @@
 class VideoDetails
 {
 public:
-	VideoDetails(char* filename);
+	VideoDetails(const char* filename);
 	~VideoDetails();
 
 	void VideoWriter_Initial(CvVideoWriter **writer ,char* filename, int fps);

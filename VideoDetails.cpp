@@ -1,6 +1,6 @@
 #include "VideoDetails.h"
 using namespace std;
-VideoDetails::VideoDetails(char* filename)
+VideoDetails::VideoDetails(const char* filename)
 {
 	if (strcmp(filename, "")== 0)
 	{
